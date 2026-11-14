@@ -18,7 +18,9 @@ Glossario del dominio per l'app di archivio e statistiche del Million Day.
 
 **Backtest**: simulazione di una giocata o di un sistema applicata alle estrazioni passate, con esiti per numero di numeri centrati e costo complessivo. Non indica risultati futuri.
 
-**Archivio**: l'insieme delle estrazioni storiche raccolte dalla fonte (giochi24).
+**Archivio**: l'insieme delle estrazioni storiche raccolte dalla fonte (archiviomillionday.it).
+
+**Concorso**: numero progressivo di un'estrazione, usato come chiave univoca per evitare duplicati.
 
 ## Relazioni
 
