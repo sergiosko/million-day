@@ -1,0 +1,9 @@
+// Hosting su Cloudflare Workers con Static Assets: serve la cartella web/ così com'è, senza build.
+{
+  "name": "million-day",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./web",
+    "not_found_handling": "none"
+  }
+}
