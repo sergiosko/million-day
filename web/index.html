@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f3d3e">
+  <meta name="description" content="Archivio, statistiche e sistemi del Million Day per uso personale">
+  <title>Million Day</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/app.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Million Day</h1>
+    <p id="stato-dati" class="muted">Caricamento archivio…</p>
+  </header>
+
+  <main>
+    <!-- Estrazioni -->
+    <section id="vista-estrazioni" class="vista" data-vista="estrazioni">
+      <div id="ultima" class="card"></div>
+      <div class="card">
+        <div class="riga-controlli">
+          <h2>Archivio</h2>
+          <label class="campo">Data
+            <input type="date" id="filtro-data">
+          </label>
+        </div>
+        <ol id="lista-estrazioni" class="lista-estrazioni"></ol>
+        <button id="altre-estrazioni" class="secondario" type="button">Mostra altre</button>
+      </div>
+    </section>
+
+    <!-- Chiedi un numero -->
+    <section id="vista-numeri" class="vista" data-vista="numeri" hidden>
+      <div class="card">
+        <h2>Chiedi un numero</h2>
+        <form id="form-numero" class="riga-controlli">
+          <label class="campo">Numero
+            <input id="input-numero" type="number" min="1" max="55" inputmode="numeric" required placeholder="1–55">
+          </label>
+          <label class="campo">Gioco
+            <select id="numero-gioco">
+              <option value="million">Million Day</option>
+              <option value="extra">Extra</option>
+            </select>
+          </label>
+          <label class="campo">Periodo
+            <select id="numero-finestra" class="select-finestra"></select>
+          </label>
+          <button type="submit">Cerca</button>
+        </form>
+      </div>
+      <div id="risultato-numero"></div>
+    </section>
+
+    <!-- Statistiche -->
+    <section id="vista-statistiche" class="vista" data-vista="statistiche" hidden>
+      <div class="card">
+        <h2>Statistiche</h2>
+        <div class="riga-controlli">
+          <label class="campo">Gioco
+            <select id="stat-gioco">
+              <option value="million">Million Day</option>
+              <option value="extra">Extra</option>
+            </select>
+          </label>
+          <label class="campo">Periodo
+            <select id="stat-finestra" class="select-finestra"></select>
+          </label>
+          <label class="campo">Ordina per
+            <select id="stat-ordine">
+              <option value="ritardo">Ritardo attuale</option>
+              <option value="frequenza">Frequenza</option>
+              <option value="ritardoMax">Ritardo massimo</option>
+              <option value="numero">Numero</option>
+            </select>
+          </label>
+        </div>
+        <p id="stat-sintesi" class="muted"></p>
+        <div class="tabella-scroll">
+          <table id="tabella-stat">
+            <thead>
+              <tr><th>Numero</th><th>Frequenza</th><th>Ritardo</th><th>Rit. max</th><th>Ultima uscita</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sistemi -->
+    <section id="vista-sistemi" class="vista" data-vista="sistemi" hidden>
+      <div class="card">
+        <h2>Sistema integrale</h2>
+        <p class="muted">Scegli da 5 a 9 numeri. Il sistema sviluppa tutte le cinquine possibili.</p>
+        <div id="griglia-numeri" class="griglia-numeri" role="group" aria-label="Numeri da 1 a 55"></div>
+        <div class="riga-controlli">
+          <button id="sistema-casuale" class="secondario" type="button">Numeri casuali</button>
+          <button id="sistema-azzera" class="secondario" type="button">Azzera</button>
+          <label class="campo-check"><input type="checkbox" id="sistema-extra"> Con Extra</label>
+        </div>
+        <p id="sistema-riepilogo" class="riepilogo"></p>
+      </div>
+
+      <div class="card">
+        <h2>Cinquine del sistema</h2>
+        <ol id="sistema-cinquine" class="cinquine"></ol>
+      </div>
+
+      <div class="card">
+        <div class="riga-controlli">
+          <h2>Backtest</h2>
+          <label class="campo">Periodo
+            <select id="backtest-finestra" class="select-finestra"></select>
+          </label>
+        </div>
+        <div id="backtest-risultato"><p class="muted">Scegli almeno 5 numeri per vedere come sarebbe andato il sistema nelle estrazioni passate.</p></div>
+      </div>
+    </section>
+
+    <p class="avvertenza">Le estrazioni sono casuali e indipendenti: frequenze, ritardi e backtest descrivono il passato e non aumentano le probabilità di vincita. Il gioco è vietato ai minori e può causare dipendenza.</p>
+  </main>
+
+  <nav class="tabbar" aria-label="Sezioni">
+    <button data-tab="estrazioni" aria-current="page">Estrazioni</button>
+    <button data-tab="numeri">Numeri</button>
+    <button data-tab="statistiche">Statistiche</button>
+    <button data-tab="sistemi">Sistemi</button>
+  </nav>
+</body>
+</html>
