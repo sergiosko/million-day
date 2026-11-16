@@ -16,8 +16,12 @@ INSERT OR IGNORE INTO estrazioni (anno, concorso, data, ora, numeri, numeri_extr
 (2025, 722, '2025-12-27', '20:30', '[4,29,39,47,51]',  '[3,10,18,40,48]');
 
 -- L'altra estrazione di quei giorni era stata importata come serale perché risultava sola:
--- il concorso dispari è quello delle 13:00, il pari quello delle 20:30.
+-- delle due del giorno, quella con il concorso più basso è delle 13:00, l'altra delle 20:30.
 UPDATE estrazioni
-SET ora = CASE WHEN concorso % 2 = 1 THEN '13:00' ELSE '20:30' END
-WHERE data IN ('2023-12-22', '2024-01-06', '2024-08-26', '2024-09-08', '2025-07-19', '2025-08-31',
+SET ora = CASE
+  WHEN concorso = (SELECT MIN(e2.concorso) FROM estrazioni e2 WHERE e2.data = estrazioni.data) THEN '13:00'
+  ELSE '20:30'
+END
+WHERE data IN (SELECT data FROM estrazioni GROUP BY data HAVING COUNT(*) = 2)
+  AND data IN ('2023-12-22', '2024-01-06', '2024-08-26', '2024-09-08', '2025-07-19', '2025-08-31',
                '2025-10-14', '2025-10-22', '2025-11-18', '2025-11-23', '2025-12-24', '2025-12-27');
