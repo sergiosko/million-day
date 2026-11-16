@@ -153,7 +153,7 @@ th { font-size: .78rem; color: var(--muted); font-weight: 600; }
 .cinquine { margin: 0; padding-left: 28px; display: grid; gap: 6px; max-height: 360px; overflow: auto; }
 .cinquine li { font-variant-numeric: tabular-nums; }
 
-.categorie { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.categorie { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .migliori { list-style: none; padding: 0; margin: 0; }
 .migliori li { padding: 8px 0; border-top: 1px solid var(--line); display: grid; gap: 4px; }
 

@@ -1,6 +1,7 @@
 import {
   MAX_NUMERO,
   MAX_SISTEMA,
+  PREMI,
   applicaFinestra,
   backtest,
   combinazioni,
@@ -236,15 +237,18 @@ function renderBacktest(numeri, conExtra) {
   const giochi = conExtra ? ["million", "extra"] : ["million"];
   const { costo } = costoSistema(numeri.length, conExtra);
 
-  const blocchi = giochi.map((gioco) => {
-    const r = backtest(numeri, estrazioni, gioco);
-    const cat = (k) => el("div", { class: "metrica" }, el("div", { class: "valore", text: intero.format(r.categorie[k]) }), el("div", { class: "nome", text: `cinquine con ${k} punti` }));
+  const risultati = giochi.map((gioco) => ({ gioco, r: backtest(numeri, estrazioni, gioco) }));
+  const speso = costo * estrazioni.length;
+  const vinto = risultati.reduce((somma, x) => somma + x.r.vincite, 0);
+
+  const blocchi = risultati.map(({ gioco, r }) => {
+    const cat = (k) => el("div", { class: "metrica" }, el("div", { class: "valore", text: intero.format(r.categorie[k]) }), el("div", { class: "nome", text: `cinquine con ${k} punti (${euro.format(PREMI[gioco][k])} l'una)` }));
     return el(
       "div",
       {},
       el("h3", { text: NOMI_GIOCO[gioco] }),
       el("div", { class: "categorie" }, [2, 3, 4, 5].map(cat)),
-      el("p", { class: "muted", text: `Estrazioni con almeno una cinquina vincente: ${intero.format(r.estrazioniVincenti)} su ${intero.format(r.estrazioni)}.` }),
+      el("p", { class: "muted", text: `Vincite: ${euro.format(r.vincite)}. Estrazioni con almeno una cinquina vincente: ${intero.format(r.estrazioniVincenti)} su ${intero.format(r.estrazioni)}.` }),
       r.migliori.length
         ? el(
             "ul",
@@ -257,10 +261,12 @@ function renderBacktest(numeri, conExtra) {
     );
   });
 
+  const metrica = (valore, nome) => el("div", { class: "metrica" }, el("div", { class: "valore", text: valore }), el("div", { class: "nome", text: nome }));
   $("#backtest-risultato").replaceChildren(
-    el("p", { text: `Se avessi giocato questo sistema in ognuna delle ${intero.format(estrazioni.length)} estrazioni, avresti speso ${euro.format(costo * estrazioni.length)}.` }),
+    el("p", { text: `Se avessi giocato questo sistema in ognuna delle ${intero.format(estrazioni.length)} estrazioni:` }),
+    el("div", { class: "metriche" }, metrica(euro.format(speso), "spesa"), metrica(euro.format(vinto), "vincite"), metrica(euro.format(vinto - speso), "saldo")),
     ...blocchi,
-    el("p", { class: "muted", text: "Gli importi delle vincite non sono calcolati: dipendono dalla tabella premi ufficiale." }),
+    el("p", { class: "muted", text: "Vincite lorde secondo la tabella premi (2, 3, 4 e 5 numeri indovinati per cinquina), senza eventuali ritenute fiscali." }),
   );
 }
 

@@ -93,6 +93,8 @@ test("backtest conta le cinquine vincenti per categoria", () => {
   assert.equal(r.categorie[3], 3);
   assert.equal(r.categorie[2], 3);
   assert.equal(r.categorie[4], 0);
+  assert.equal(r.vincite, 3 * 50 + 3 * 2);
+  assert.equal(backtest([1, 2, 3, 4, 5, 6], [e(1, [9, 10, 11, 12, 13], [1, 2, 3, 40, 41])], "extra").vincite, 3 * 100 + 3 * 4);
   assert.equal(r.estrazioniVincenti, 1);
   assert.equal(r.distribuzioneCentrati[3], 1);
   assert.equal(r.migliori.length, 1);
@@ -101,6 +103,7 @@ test("backtest conta le cinquine vincenti per categoria", () => {
 test("backtest di una cinquina centrata", () => {
   const r = backtest([1, 2, 3, 4, 5], [e(1, [1, 2, 3, 4, 5]), e(2, [9, 10, 11, 12, 13])], "million");
   assert.equal(r.categorie[5], 1);
+  assert.equal(r.vincite, 1000000);
   assert.equal(r.categorie[2], 0); // una cinquina singola vince solo nella categoria più alta
   assert.equal(r.estrazioniVincenti, 1);
   assert.equal(r.cinquineGiocate, 2);

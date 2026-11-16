@@ -1,5 +1,5 @@
 // Service worker: l'app funziona offline; l'archivio si aggiorna dalla rete quando possibile.
-const VERSIONE = "v2";
+const VERSIONE = "v3";
 const CACHE_APP = `million-day-app-${VERSIONE}`;
 const CACHE_DATI = "million-day-dati";
 const FILE_APP = [

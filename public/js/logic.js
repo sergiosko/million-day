@@ -7,6 +7,11 @@ export const MIN_SISTEMA = 6;
 export const MAX_SISTEMA = 9;
 export const COSTO_COMBINAZIONE = 1; // euro per ogni cinquina
 export const COSTO_EXTRA = 1; // euro in più per cinquina con l'opzione Extra
+// Premi lordi in euro per cinquina, in base ai numeri indovinati.
+export const PREMI = {
+  million: { 2: 2, 3: 50, 4: 1000, 5: 1000000 },
+  extra: { 2: 4, 3: 100, 4: 1000, 5: 100000 },
+};
 
 /** Campo dell'estrazione che contiene i numeri del gioco scelto. */
 export function campoGioco(gioco) {
@@ -165,6 +170,7 @@ export function backtest(numeri, estrazioni, gioco) {
     cinquineGiocate: cinquine * estrazioni.length,
     estrazioniVincenti,
     categorie,
+    vincite: [2, 3, 4, 5].reduce((somma, k) => somma + categorie[k] * PREMI[gioco][k], 0),
     distribuzioneCentrati,
     migliori: migliori.slice(0, 20),
   };
