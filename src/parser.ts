@@ -102,9 +102,11 @@ export function parseArchivio(raw: string): Archivio {
 
 /**
  * Orario delle estrazioni. Con due estrazioni nello stesso giorno la prima è delle 13:00
- * e la seconda delle 20:30. Un'estrazione sola nel giorno è delle 20:30 (prima del 2023
- * c'era solo quella serale), tranne l'ultima dell'archivio quando il giorno precedente
- * ne aveva due: è quella delle 13:00 di oggi, in attesa della serale.
+ * e la seconda delle 20:30. Un'estrazione sola nel giorno è delle 20:30 (fino a marzo 2023
+ * c'era solo quella serale), salvo due casi riconoscibili dai numeri di concorso:
+ * - manca il concorso successivo (il giorno dopo riparte da concorso + 2): è quella
+ *   delle 13:00 e la serale non è nell'archivio;
+ * - è l'ultima dell'archivio e il giorno prima ne aveva due: è quella delle 13:00 di oggi.
  */
 function assegnaOre(estrazioni: Estrazione[]): void {
   const perData = new Map<string, Estrazione[]>();
@@ -114,10 +116,15 @@ function assegnaOre(estrazioni: Estrazione[]): void {
     const gruppo = perData.get(data)!;
     if (gruppo.length >= 2) {
       gruppo.forEach((e, j) => (e.ora = j === 0 ? "13:00" : "20:30"));
-    } else {
-      const ultima = i === date.length - 1 && i > 0 && perData.get(date[i - 1])!.length >= 2;
-      gruppo[0].ora = ultima ? "13:00" : "20:30";
+      return;
     }
+    const sola = gruppo[0];
+    const prima = i > 0 ? perData.get(date[i - 1])! : null;
+    const dopo = i < date.length - 1 ? perData.get(date[i + 1])! : null;
+    const mancaLaPrecedente = prima !== null && prima[prima.length - 1].concorso === sola.concorso - 2;
+    const mancaLaSuccessiva = dopo !== null && dopo[0].concorso === sola.concorso + 2;
+    const inAttesaDellaSerale = dopo === null && prima !== null && prima.length >= 2;
+    sola.ora = !mancaLaPrecedente && (mancaLaSuccessiva || inAttesaDellaSerale) ? "13:00" : "20:30";
   });
 }
 

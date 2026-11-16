@@ -64,6 +64,16 @@ test("ultima estrazione del giorno in corso: è quella delle 13:00", () => {
   assert.deepEqual(r.estrazioni.map((e) => [e.data, e.ora]), [["2026-01-01", "13:00"], ["2026-01-01", "20:30"], ["2026-01-02", "13:00"]]);
 });
 
+test("giorno incompleto: l'orario dell'estrazione rimasta dipende da quale concorso manca", () => {
+  // Manca il 4 (serale del 2/1) e il 7 (13:00 del 4/1).
+  const r = parseArchivio(
+    pagina(2025, [riga("4/1/2025", 8), riga("3/1/2025", 6), riga("3/1/2025", 5), riga("2/1/2025", 3), riga("1/1/2025", 2), riga("1/1/2025", 1)]),
+  );
+  const ore = Object.fromEntries(r.estrazioni.map((e) => [e.concorso, e.ora]));
+  assert.equal(ore[3], "13:00");
+  assert.equal(ore[8], "20:30");
+});
+
 test("concorsi mancanti e date fuori anno: segnalati", () => {
   const r = parseArchivio(pagina(2025, [riga("2/1/2025", 4), riga("31/12/2024", 1)]));
   assert.equal(r.avvisi.some((a) => a.includes("concorsi mancanti: 2, 3")), true);
