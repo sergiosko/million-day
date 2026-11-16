@@ -1,9 +1,23 @@
-// Hosting su Cloudflare Workers con Static Assets: serve la cartella web/ così com'è, senza build.
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "million-day",
+  "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": {
-    "directory": "./web",
-    "not_found_handling": "none"
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "million-day",
+      "database_id": "DA_SOSTITUIRE_CON_ID_DI_WRANGLER_D1_CREATE",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "triggers": {
+    // Orari UTC: coprono le estrazioni delle 13:00 e delle 20:30 con ora solare e legale.
+    "crons": ["25 11,12 * * *", "55 18,19 * * *"]
   }
 }

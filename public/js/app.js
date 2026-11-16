@@ -11,7 +11,7 @@ import {
   validaSelezione,
 } from "./logic.js";
 
-const URL_DATI = "data/estrazioni.json";
+const URL_DATI = "api/estrazioni";
 const PAGINA_LISTA = 30;
 const FINESTRE = [
   { id: "ultime-50", nome: "Ultime 50 estrazioni", finestra: { tipo: "ultime", n: 50 } },

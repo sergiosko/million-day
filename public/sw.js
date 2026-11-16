@@ -1,5 +1,5 @@
 // Service worker: l'app funziona offline; l'archivio si aggiorna dalla rete quando possibile.
-const VERSIONE = "v1";
+const VERSIONE = "v2";
 const CACHE_APP = `million-day-app-${VERSIONE}`;
 const CACHE_DATI = "million-day-dati";
 const FILE_APP = [
@@ -30,9 +30,10 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== location.origin) return;
+  if (url.pathname.includes("/api/") && !url.pathname.endsWith("/api/estrazioni")) return;
 
   // Archivio: prima la rete (dati freschi), poi la copia salvata se si è offline.
-  if (url.pathname.endsWith("/data/estrazioni.json")) {
+  if (url.pathname.endsWith("/api/estrazioni")) {
     event.respondWith(
       fetch(event.request)
         .then((risposta) => {

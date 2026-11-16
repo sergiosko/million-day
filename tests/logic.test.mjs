@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { parseArchivio } from "../src/parser.ts";
 import {
   applicaFinestra,
   backtest,
@@ -11,7 +12,7 @@ import {
   ordina,
   statisticheNumeri,
   validaSelezione,
-} from "./logic.js";
+} from "../public/js/logic.js";
 
 const e = (concorso, numeri, extra = [50, 51, 52, 53, 54], data = "2026-01-01") => ({
   anno: 2026,
@@ -106,9 +107,9 @@ test("backtest di una cinquina centrata", () => {
 });
 
 test("archivio reale 2026", () => {
-  const dati = JSON.parse(readFileSync(new URL("../data/estrazioni.json", import.meta.url)));
-  const tutte = ordina(dati.estrazioni);
-  assert.equal(tutte.length >= 636, true);
+  const raw = readFileSync(new URL("./fixtures/archivio-2026.mht", import.meta.url), "utf8");
+  const tutte = ordina(parseArchivio(raw).estrazioni);
+  assert.equal(tutte.length, 636);
   const s = statisticheNumeri(tutte, "million", { tipo: "tutte" });
   const somma = s.numeri.reduce((acc, x) => acc + x.frequenza, 0);
   assert.equal(somma, tutte.length * 5);

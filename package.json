@@ -1,8 +1,18 @@
 {
   "name": "million-day",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test web/js/logic.test.mjs && python3 -I scraper/test_parse_archive.py && python3 -I scraper/test_update_data.py"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "seed": "node scripts/mht-to-sql.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261110.1",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.0.0"
   }
 }
