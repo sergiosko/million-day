@@ -237,12 +237,15 @@ function renderSistema() {
     riepilogo.textContent = `${numeri.length} numeri scelti. ${errore}`;
     riepilogo.classList.toggle("errore", numeri.length > 0);
     $("#sistema-cinquine").replaceChildren();
-    $("#backtest-risultato").replaceChildren(el("p", { class: "muted", text: "Scegli almeno 5 numeri per vedere come sarebbe andato il sistema nelle estrazioni passate." }));
+    $("#backtest-risultato").replaceChildren(el("p", { class: "muted", text: "Scegli almeno 5 numeri per vedere come sarebbe andata la giocata nelle estrazioni passate." }));
     return;
   }
   riepilogo.classList.remove("errore");
   const { cinquine, costo } = costoSistema(numeri.length, conExtra);
-  riepilogo.textContent = `${numeri.length} numeri: ${cinquine} ${cinquine === 1 ? "cinquina" : "cinquine"}, costo ${euro.format(costo)} per estrazione${conExtra ? " (con Extra)" : ""}.`;
+  const tipo = numeri.length === 5 ? "Giocata singola" : `Sistema integrale da ${numeri.length} numeri`;
+  riepilogo.textContent = `${tipo}: ${cinquine} ${cinquine === 1 ? "cinquina" : "cinquine"}, costo ${euro.format(costo)} per estrazione${conExtra ? " (con Extra)" : ""}.`;
+  $("#titolo-cinquine").textContent = numeri.length === 5 ? "La tua giocata" : `Cinquine del sistema (${cinquine})`;
+  if (numeri.length >= 5) $("#sistema-quanti").value = String(numeri.length);
   $("#sistema-cinquine").replaceChildren(...combinazioni(numeri).map((c) => el("li", { text: c.join(" · ") })));
   renderBacktest(numeri, conExtra);
 }
@@ -278,7 +281,7 @@ function renderBacktest(numeri, conExtra) {
 
   const metrica = (valore, nome) => el("div", { class: "metrica" }, el("div", { class: "valore", text: valore }), el("div", { class: "nome", text: nome }));
   $("#backtest-risultato").replaceChildren(
-    el("p", { text: `Se avessi giocato questo sistema in ognuna delle ${intero.format(estrazioni.length)} estrazioni:` }),
+    el("p", { text: `Se avessi giocato questi numeri in ognuna delle ${intero.format(estrazioni.length)} estrazioni:` }),
     el("div", { class: "metriche" }, metrica(euro.format(speso), "spesa"), metrica(euro.format(vinto), "vincite"), metrica(euro.format(vinto - speso), "saldo")),
     ...blocchi,
     el("p", { class: "muted", text: "Vincite lorde secondo la tabella premi (2, 3, 4 e 5 numeri indovinati per cinquina), senza eventuali ritenute fiscali." }),
@@ -286,10 +289,10 @@ function renderBacktest(numeri, conExtra) {
 }
 
 function selezioneCasuale() {
-  const quanti = Math.max(5, stato.selezione.size || 6);
+  const quanti = Number($("#sistema-quanti").value);
   const scelti = new Set();
   const casuale = new Uint32Array(1);
-  while (scelti.size < Math.min(quanti, MAX_SISTEMA)) {
+  while (scelti.size < quanti) {
     crypto.getRandomValues(casuale);
     scelti.add((casuale[0] % MAX_NUMERO) + 1);
   }

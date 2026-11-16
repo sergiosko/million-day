@@ -101,11 +101,20 @@
     <!-- Sistemi -->
     <section id="vista-sistemi" class="vista" data-vista="sistemi" hidden>
       <div class="card">
-        <h2>Sistema integrale</h2>
-        <p class="muted">Scegli da 5 a 9 numeri. Il sistema sviluppa tutte le cinquine possibili.</p>
+        <h2>Giocata o sistema</h2>
+        <p class="muted">Con 5 numeri fai una giocata singola. Da 6 a 9 numeri ottieni un sistema integrale, che sviluppa tutte le cinquine possibili.</p>
         <div id="griglia-numeri" class="griglia-numeri" role="group" aria-label="Numeri da 1 a 55"></div>
         <div class="riga-controlli">
-          <button id="sistema-casuale" class="secondario" type="button">Numeri casuali</button>
+          <label class="campo">Numeri casuali
+            <select id="sistema-quanti">
+              <option value="5">5 · giocata singola (1 cinquina)</option>
+              <option value="6">6 · sistema da 6 cinquine</option>
+              <option value="7">7 · sistema da 21 cinquine</option>
+              <option value="8">8 · sistema da 56 cinquine</option>
+              <option value="9">9 · sistema da 126 cinquine</option>
+            </select>
+          </label>
+          <button id="sistema-casuale" class="secondario" type="button">Genera</button>
           <button id="sistema-azzera" class="secondario" type="button">Azzera</button>
           <label class="campo-check"><input type="checkbox" id="sistema-extra"> Con Extra</label>
         </div>
@@ -113,7 +122,7 @@
       </div>
 
       <div class="card">
-        <h2>Cinquine del sistema</h2>
+        <h2 id="titolo-cinquine">Cinquine giocate</h2>
         <ol id="sistema-cinquine" class="cinquine"></ol>
       </div>
 
@@ -124,7 +133,7 @@
             <select id="backtest-finestra" class="select-finestra"></select>
           </label>
         </div>
-        <div id="backtest-risultato"><p class="muted">Scegli almeno 5 numeri per vedere come sarebbe andato il sistema nelle estrazioni passate.</p></div>
+        <div id="backtest-risultato"><p class="muted">Scegli almeno 5 numeri per vedere come sarebbe andata la giocata nelle estrazioni passate.</p></div>
       </div>
     </section>
 
