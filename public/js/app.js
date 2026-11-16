@@ -94,13 +94,25 @@ function renderUltima() {
   );
 }
 
+function popolaAnni() {
+  const anni = [...new Set(stato.estrazioni.map((e) => e.anno))].sort((a, b) => b - a);
+  $("#filtro-anno").replaceChildren(
+    el("option", { value: "", text: "Tutti gli anni" }),
+    ...anni.map((a) => el("option", { value: String(a), text: String(a) })),
+  );
+}
+
 function renderLista() {
-  const filtro = $("#filtro-data").value;
-  const recenti = [...stato.estrazioni].reverse();
-  const elenco = filtro ? recenti.filter((e) => e.data === filtro) : recenti.slice(0, stato.mostrate);
+  const data = $("#filtro-data").value;
+  const anno = Number($("#filtro-anno").value) || null;
+  let filtrate = [...stato.estrazioni].reverse();
+  if (anno) filtrate = filtrate.filter((e) => e.anno === anno);
+  if (data) filtrate = filtrate.filter((e) => e.data === data);
+  const elenco = data ? filtrate : filtrate.slice(0, stato.mostrate);
   const lista = $("#lista-estrazioni");
   if (!elenco.length) {
-    lista.replaceChildren(el("li", { class: "muted", text: "Nessuna estrazione in questa data." }));
+    const vuoto = data && anno && !data.startsWith(`${anno}-`) ? `La data scelta non è nel ${anno}.` : "Nessuna estrazione trovata.";
+    lista.replaceChildren(el("li", { class: "muted", text: vuoto }));
   } else {
     lista.replaceChildren(
       ...elenco.map((e) =>
@@ -113,7 +125,10 @@ function renderLista() {
       ),
     );
   }
-  $("#altre-estrazioni").hidden = Boolean(filtro) || stato.mostrate >= recenti.length;
+  $("#conteggio-lista").textContent = data
+    ? ""
+    : `${intero.format(Math.min(stato.mostrate, filtrate.length))} di ${intero.format(filtrate.length)} estrazioni${anno ? ` del ${anno}` : ""}`;
+  $("#altre-estrazioni").hidden = Boolean(data) || stato.mostrate >= filtrate.length;
 }
 
 // ---------- Chiedi un numero ----------
@@ -303,6 +318,10 @@ async function avvia() {
 
   document.querySelectorAll(".tabbar button").forEach((b) => b.addEventListener("click", () => mostraVista(b.dataset.tab)));
   $("#filtro-data").addEventListener("input", renderLista);
+  $("#filtro-anno").addEventListener("change", () => {
+    stato.mostrate = PAGINA_LISTA;
+    renderLista();
+  });
   $("#altre-estrazioni").addEventListener("click", () => {
     stato.mostrate += PAGINA_LISTA;
     renderLista();
@@ -332,6 +351,7 @@ async function avvia() {
     return;
   }
   renderUltima();
+  popolaAnni();
   renderLista();
   renderStatistiche();
   renderSistema();

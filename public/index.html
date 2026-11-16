@@ -23,12 +23,18 @@
     <section id="vista-estrazioni" class="vista" data-vista="estrazioni">
       <div id="ultima" class="card"></div>
       <div class="card">
+        <h2>Archivio</h2>
         <div class="riga-controlli">
-          <h2>Archivio</h2>
           <label class="campo">Data
             <input type="date" id="filtro-data">
           </label>
+          <label class="campo">Anno
+            <select id="filtro-anno">
+              <option value="">Tutti gli anni</option>
+            </select>
+          </label>
         </div>
+        <p id="conteggio-lista" class="muted"></p>
         <ol id="lista-estrazioni" class="lista-estrazioni"></ol>
         <button id="altre-estrazioni" class="secondario" type="button">Mostra altre</button>
       </div>
