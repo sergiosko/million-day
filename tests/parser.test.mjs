@@ -37,15 +37,37 @@ test("archivio 2026: righe note", () => {
   assert.equal(perConcorso.get(1).data, "2026-01-01");
 });
 
+const riga = (data, concorso, numeri = "1 2 3 4 5", extra = "6 7 8 9 10") =>
+  `<tr><td>${data}</td><td>${concorso}</td><td>${numeri.split(" ").map((n) => `<span>${n}</span>`).join(" ")}</td><td>${extra.split(" ").map((n) => `<span>${n}</span>`).join(" ")}</td></tr>`;
+const pagina = (anno, righe) => `<table class="tba"><caption>Archivio estrazioni Million Day - ${anno}</caption><tbody>${righe.join("")}</tbody></table>`;
+
 test("righe anomale: segnalate e scartate dal salvataggio", () => {
-  const html = `<table class="tba"><caption>Archivio estrazioni Million Day - 2026</caption><tbody>
-    <tr><td>1/1/2026</td><td>1</td><td><span>1</span> <span>2</span> <span>3</span> <span>4</span> <span>5</span></td><td><span>6</span> <span>7</span> <span>8</span> <span>9</span> <span>10</span></td></tr>
-    <tr><td>5/1/2026</td><td>2</td><td><span>1</span> <span>2</span> <span>3</span> <span>4</span></td><td><span>6</span> <span>7</span> <span>8</span> <span>9</span> <span>99</span></td></tr>
-  </tbody></table>`;
-  const r = parseArchivio(html);
+  const r = parseArchivio(pagina(2026, [riga("1/1/2026", 1), riga("1/1/2026", 2, "1 2 3 4", "6 7 8 9 99")]));
   assert.equal(r.estrazioni.length, 2);
-  assert.equal(r.avvisi.length, 3); // data incoerente, numeri incompleti, extra fuori intervallo
+  assert.equal(r.avvisi.length, 2); // numeri incompleti, extra fuori intervallo
   assert.deepEqual(soloValide(r.estrazioni).map((e) => e.concorso), [1]);
+});
+
+test("anno con una sola estrazione al giorno e poi due: date dalla pagina, orari dal giorno", () => {
+  const r = parseArchivio(
+    pagina(2023, [riga("3/1/2023", 4), riga("3/1/2023", 3), riga("2/1/2023", 2), riga("1/1/2023", 1)]),
+  );
+  assert.deepEqual(r.avvisi, []);
+  assert.deepEqual(
+    r.estrazioni.map((e) => [e.concorso, e.data, e.ora]),
+    [[1, "2023-01-01", "20:30"], [2, "2023-01-02", "20:30"], [3, "2023-01-03", "13:00"], [4, "2023-01-03", "20:30"]],
+  );
+});
+
+test("ultima estrazione del giorno in corso: è quella delle 13:00", () => {
+  const r = parseArchivio(pagina(2026, [riga("Oggi", 3), riga("1/1/2026", 2), riga("1/1/2026", 1)]));
+  assert.deepEqual(r.estrazioni.map((e) => [e.data, e.ora]), [["2026-01-01", "13:00"], ["2026-01-01", "20:30"], ["2026-01-02", "13:00"]]);
+});
+
+test("concorsi mancanti e date fuori anno: segnalati", () => {
+  const r = parseArchivio(pagina(2025, [riga("2/1/2025", 4), riga("31/12/2024", 1)]));
+  assert.equal(r.avvisi.some((a) => a.includes("concorsi mancanti: 2, 3")), true);
+  assert.equal(r.avvisi.some((a) => a.includes("fuori dall'anno")), true);
 });
 
 test("pagina senza tabella", () => {

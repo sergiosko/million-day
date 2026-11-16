@@ -1,5 +1,7 @@
-// Genera seed.sql dagli snapshot dell'archivio salvati dal browser (.mht o .html).
-// Uso: npm run seed -- archivio-2025.mht archivio-2024.mht
+// Genera seed.sql dalle pagine di archivio: indirizzi web oppure snapshot salvati dal
+// browser (.mht o .html).
+// Uso: npm run seed -- https://www.archiviomillionday.it/million-day-archivio-2025.php
+//      npm run seed -- archivio-2025.mht archivio-2024.mht
 // Senza argomenti usa gli snapshot in tests/fixtures/.
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -17,7 +19,19 @@ const sql = (v) => (typeof v === "number" ? String(v) : `'${String(v).replaceAll
 const righe = [];
 let errori = 0;
 for (const nome of file) {
-  const archivio = parseArchivio(readFileSync(nome, "utf8"));
+  let raw;
+  if (/^https?:\/\//.test(nome)) {
+    const risposta = await fetch(nome, { headers: { "user-agent": "million-day-archivio/1.0 (uso personale)" } });
+    if (!risposta.ok) {
+      console.error(`errore [${nome}]: HTTP ${risposta.status}`);
+      errori++;
+      continue;
+    }
+    raw = await risposta.text();
+  } else {
+    raw = readFileSync(nome, "utf8");
+  }
+  const archivio = parseArchivio(raw);
   const valide = soloValide(archivio.estrazioni);
   for (const avviso of archivio.avvisi) console.error(`avviso [${nome}]: ${avviso}`);
   if (!valide.length) {

@@ -78,27 +78,60 @@ export function parseArchivio(raw: string): Archivio {
       continue;
     }
 
-    // La data è in chiaro (gg/mm/aaaa) oppure "Oggi"/"Ieri": la calcoliamo sempre dal
-    // concorso e, quando la pagina la riporta, verifichiamo che coincida.
-    const data = dataPerConcorso(anno, concorso);
+    // La data è in chiaro (gg/mm/aaaa) oppure "Oggi"/"Ieri": in quel caso la calcoliamo
+    // dal concorso, che vale negli anni con due estrazioni al giorno dal 1 gennaio.
     const chiaro = RE_DATA.exec(testo(celle[0])) ?? RE_DATA_LINK.exec(celle[0]);
-    if (chiaro) {
-      const inPagina = iso(Number(chiaro[3]), Number(chiaro[2]), Number(chiaro[1]));
-      if (inPagina !== data) avvisi.push(`concorso ${concorso}: data in pagina ${inPagina} diversa da quella calcolata ${data}`);
-    }
+    const data = chiaro ? iso(Number(chiaro[3]), Number(chiaro[2]), Number(chiaro[1])) : dataPerConcorso(anno, concorso);
+    if (!data.startsWith(`${anno}-`)) avvisi.push(`concorso ${concorso}: data ${data} fuori dall'anno ${anno}`);
 
     estrazioni.push({
       anno,
       concorso,
       data,
-      ora: oraPerConcorso(concorso),
+      ora: "20:30", // assegnata sotto, in base alle estrazioni dello stesso giorno
       numeri: numeriCella(celle[2], `concorso ${concorso}: numeri`, avvisi),
       numeri_extra: numeriCella(celle[3], `concorso ${concorso}: numeri extra`, avvisi),
     });
   }
 
   estrazioni.sort((a, b) => a.concorso - b.concorso);
+  assegnaOre(estrazioni);
+  segnalaBuchi(estrazioni, avvisi);
   return { anno, estrazioni, avvisi };
+}
+
+/**
+ * Orario delle estrazioni. Con due estrazioni nello stesso giorno la prima è delle 13:00
+ * e la seconda delle 20:30. Un'estrazione sola nel giorno è delle 20:30 (prima del 2023
+ * c'era solo quella serale), tranne l'ultima dell'archivio quando il giorno precedente
+ * ne aveva due: è quella delle 13:00 di oggi, in attesa della serale.
+ */
+function assegnaOre(estrazioni: Estrazione[]): void {
+  const perData = new Map<string, Estrazione[]>();
+  for (const e of estrazioni) perData.set(e.data, [...(perData.get(e.data) ?? []), e]);
+  const date = [...perData.keys()].sort();
+  date.forEach((data, i) => {
+    const gruppo = perData.get(data)!;
+    if (gruppo.length >= 2) {
+      gruppo.forEach((e, j) => (e.ora = j === 0 ? "13:00" : "20:30"));
+    } else {
+      const ultima = i === date.length - 1 && i > 0 && perData.get(date[i - 1])!.length >= 2;
+      gruppo[0].ora = ultima ? "13:00" : "20:30";
+    }
+  });
+}
+
+/** Segnala i concorsi mancanti nella sequenza e i giorni con più di due estrazioni. */
+function segnalaBuchi(estrazioni: Estrazione[], avvisi: string[]): void {
+  const presenti = new Set(estrazioni.map((e) => e.concorso));
+  if (presenti.size !== estrazioni.length) avvisi.push("ci sono concorsi ripetuti");
+  const max = Math.max(0, ...presenti);
+  const mancanti = [];
+  for (let c = 1; c <= max; c++) if (!presenti.has(c)) mancanti.push(c);
+  if (mancanti.length) avvisi.push(`concorsi mancanti: ${mancanti.slice(0, 30).join(", ")}${mancanti.length > 30 ? ", …" : ""}`);
+  const perData = new Map<string, number>();
+  for (const e of estrazioni) perData.set(e.data, (perData.get(e.data) ?? 0) + 1);
+  for (const [data, quante] of perData) if (quante > 2) avvisi.push(`${data}: ${quante} estrazioni nello stesso giorno`);
 }
 
 /** Solo le estrazioni con cinque numeri validi per gioco: le altre non vanno salvate. */
