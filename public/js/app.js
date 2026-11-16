@@ -11,6 +11,7 @@ import {
   statisticheNumeri,
   validaSelezione,
 } from "./logic.js";
+import { eliminaGiocata, leggiGiocate, salvaGiocata } from "./giocate.js";
 
 const URL_DATI = "api/estrazioni";
 const PAGINA_LISTA = 30;
@@ -39,14 +40,14 @@ function el(tag, attrs = {}, ...figli) {
   return nodo;
 }
 
-function palline(numeri, { extra = false, centrati = [], grande = false } = {}) {
+function palline(numeri, { extra = false, centrati = [], grande = false, piccola = false } = {}) {
   const set = new Set(centrati);
   return el(
     "div",
     { class: "palline" },
     numeri.map((n) =>
       el("span", {
-        class: ["pallina", extra && "extra", set.has(n) && "centrato", grande && "grande"].filter(Boolean).join(" "),
+        class: ["pallina", extra && "extra", set.has(n) && "centrato", grande && "grande", piccola && "piccola"].filter(Boolean).join(" "),
         text: String(n),
       }),
     ),
@@ -237,6 +238,7 @@ function renderSistema() {
     riepilogo.textContent = `${numeri.length} numeri scelti. ${errore}`;
     riepilogo.classList.toggle("errore", numeri.length > 0);
     $("#sistema-cinquine").replaceChildren();
+    $("#salva-giocata").disabled = true;
     $("#backtest-risultato").replaceChildren(el("p", { class: "muted", text: "Scegli almeno 5 numeri per vedere come sarebbe andata la giocata nelle estrazioni passate." }));
     return;
   }
@@ -246,7 +248,13 @@ function renderSistema() {
   riepilogo.textContent = `${tipo}: ${cinquine} ${cinquine === 1 ? "cinquina" : "cinquine"}, costo ${euro.format(costo)} per estrazione${conExtra ? " (con Extra)" : ""}.`;
   $("#titolo-cinquine").textContent = numeri.length === 5 ? "La tua giocata" : `Cinquine del sistema (${cinquine})`;
   if (numeri.length >= 5) $("#sistema-quanti").value = String(numeri.length);
-  $("#sistema-cinquine").replaceChildren(...combinazioni(numeri).map((c) => el("li", { text: c.join(" · ") })));
+  const elenco = combinazioni(numeri);
+  $("#sistema-cinquine").replaceChildren(
+    ...elenco.map((c, i) =>
+      el("li", { "aria-label": `Cinquina ${i + 1}: ${c.join(", ")}` }, elenco.length > 1 ? el("span", { class: "indice", text: `#${i + 1}` }) : null, palline(c, { piccola: true })),
+    ),
+  );
+  $("#salva-giocata").disabled = false;
   renderBacktest(numeri, conExtra);
 }
 
@@ -286,6 +294,72 @@ function renderBacktest(numeri, conExtra) {
     ...blocchi,
     el("p", { class: "muted", text: "Vincite lorde secondo la tabella premi (2, 3, 4 e 5 numeri indovinati per cinquina), senza eventuali ritenute fiscali." }),
   );
+}
+
+// ---------- Giocate salvate ----------
+
+const formatoBreve = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
+
+function confrontoUltima(g) {
+  const ultima = stato.estrazioni.at(-1);
+  if (!ultima) return { testo: "", centrati: [] };
+  const centrati = g.numeri.filter((n) => ultima.numeri.includes(n));
+  const centratiExtra = g.numeri.filter((n) => ultima.numeri_extra.includes(n));
+  let testo = `Ultima estrazione (${ultima.data.split("-").reverse().join("/")} ${ultima.ora}): ${centrati.length} al Million Day`;
+  if (g.conExtra) testo += `, ${centratiExtra.length} all'Extra`;
+  return { testo: `${testo}.`, centrati: g.conExtra ? [...new Set([...centrati, ...centratiExtra])] : centrati };
+}
+
+function renderGiocateSalvate() {
+  const giocate = leggiGiocate();
+  const lista = $("#giocate-salvate");
+  if (!giocate.length) {
+    lista.replaceChildren(el("li", { class: "muted", text: "Nessuna giocata salvata. Scegli i numeri e premi «Salva giocata»." }));
+    return;
+  }
+  lista.replaceChildren(
+    ...giocate.map((g) => {
+      const { cinquine, costo } = costoSistema(g.numeri.length, g.conExtra);
+      const tipo = g.numeri.length === 5 ? "Giocata singola" : `Sistema da ${g.numeri.length} numeri, ${cinquine} cinquine`;
+      const confronto = confrontoUltima(g);
+      const usa = el("button", { type: "button", class: "secondario", text: "Usa" });
+      usa.addEventListener("click", () => {
+        stato.selezione = new Set(g.numeri);
+        $("#sistema-extra").checked = g.conExtra;
+        $("#salva-nome").value = g.nome;
+        renderSistema();
+        $("#vista-sistemi").scrollIntoView({ behavior: "smooth" });
+      });
+      const elimina = el("button", { type: "button", class: "pericolo", text: "Elimina" });
+      elimina.addEventListener("click", () => {
+        if (!confirm(`Eliminare «${g.nome || g.numeri.join(" ")}»?`)) return;
+        eliminaGiocata(g.id);
+        renderGiocateSalvate();
+      });
+      return el(
+        "li",
+        {},
+        el("div", {}, el("span", { class: "titolo", text: g.nome || `Giocata del ${formatoBreve.format(new Date(g.creata))}` }), g.conExtra ? el("span", { class: "tag", text: "Extra" }) : null),
+        palline(g.numeri, { centrati: confronto.centrati }),
+        el("span", { class: "muted", text: `${tipo} · ${euro.format(costo)} per estrazione` }),
+        confronto.testo ? el("span", { class: "muted", text: confronto.testo }) : null,
+        el("div", { class: "azioni" }, usa, elimina),
+      );
+    }),
+  );
+}
+
+function salvaSelezione(evento) {
+  evento.preventDefault();
+  const esito = $("#salva-esito");
+  try {
+    const g = salvaGiocata({ numeri: [...stato.selezione], conExtra: $("#sistema-extra").checked, nome: $("#salva-nome").value });
+    esito.textContent = `Salvata: ${g.nome || g.numeri.join(" ")}.`;
+    $("#salva-nome").value = "";
+    renderGiocateSalvate();
+  } catch (err) {
+    esito.textContent = err instanceof Error ? err.message : "Salvataggio non riuscito.";
+  }
 }
 
 function selezioneCasuale() {
@@ -335,6 +409,7 @@ async function avvia() {
   $("#sistema-extra").addEventListener("change", renderSistema);
   $("#backtest-finestra").addEventListener("change", renderSistema);
   $("#sistema-casuale").addEventListener("click", selezioneCasuale);
+  $("#form-salva").addEventListener("submit", salvaSelezione);
   $("#sistema-azzera").addEventListener("click", () => {
     stato.selezione.clear();
     renderSistema();
@@ -343,6 +418,7 @@ async function avvia() {
   const iniziale = location.hash.slice(1);
   mostraVista(["estrazioni", "numeri", "statistiche", "sistemi"].includes(iniziale) ? iniziale : "estrazioni");
 
+  renderGiocateSalvate(); // visibili anche se l'archivio non si carica
   try {
     const dati = await caricaDati();
     stato.estrazioni = ordina(dati.estrazioni);
@@ -354,6 +430,7 @@ async function avvia() {
     return;
   }
   renderUltima();
+  renderGiocateSalvate();
   popolaAnni();
   renderLista();
   renderStatistiche();

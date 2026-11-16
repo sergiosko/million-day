@@ -150,8 +150,27 @@ th { font-size: .78rem; color: var(--muted); font-weight: 600; }
 .griglia-numeri button[aria-pressed="true"] { background: var(--gold); color: #fff; border-color: var(--gold); }
 .riepilogo { font-weight: 600; margin: 6px 0 0; }
 .riepilogo.errore { color: #b3261e; }
-.cinquine { margin: 0; padding-left: 28px; display: grid; gap: 6px; max-height: 360px; overflow: auto; }
-.cinquine li { font-variant-numeric: tabular-nums; }
+.cinquine { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 420px; overflow: auto; }
+.cinquine li { display: flex; align-items: center; gap: 10px; }
+.indice {
+  flex: 0 0 auto;
+  min-width: 34px;
+  font-size: .72rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.pallina.piccola { width: 30px; height: 30px; font-size: .82rem; }
+
+.salva { margin-top: 12px; }
+.giocate-salvate { list-style: none; margin: 0; padding: 0; }
+.giocate-salvate li { padding: 12px 0; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.giocate-salvate li:first-child { border-top: 0; }
+.giocate-salvate .titolo { font-weight: 600; }
+.giocate-salvate .azioni { display: flex; gap: 8px; }
+.giocate-salvate .azioni button { min-height: 36px; padding: 0 14px; }
+button.pericolo { background: transparent; color: #b3261e; border: 1px solid currentColor; }
+.tag { display: inline-block; font-size: .7rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--extra-soft); color: var(--extra); margin-left: 6px; vertical-align: middle; }
 
 .categorie { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .migliori { list-style: none; padding: 0; margin: 0; }

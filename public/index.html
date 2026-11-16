@@ -119,6 +119,19 @@
           <label class="campo-check"><input type="checkbox" id="sistema-extra"> Con Extra</label>
         </div>
         <p id="sistema-riepilogo" class="riepilogo"></p>
+        <form id="form-salva" class="riga-controlli salva">
+          <label class="campo">Nome (facoltativo)
+            <input id="salva-nome" type="text" maxlength="40" placeholder="es. Numeri di famiglia" autocomplete="off">
+          </label>
+          <button id="salva-giocata" type="submit" disabled>Salva giocata</button>
+        </form>
+        <p id="salva-esito" class="muted" role="status"></p>
+      </div>
+
+      <div class="card">
+        <h2>Giocate salvate</h2>
+        <p class="muted">Restano su questo dispositivo: sul tablet e sul computer gli elenchi sono separati.</p>
+        <ul id="giocate-salvate" class="giocate-salvate"></ul>
       </div>
 
       <div class="card">

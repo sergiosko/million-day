@@ -12,6 +12,8 @@ Glossario del dominio per l'app di archivio e statistiche del Million Day.
 
 **Giocata sistemistica (Sistema)**: giocata che copre più combinazioni a partire da un insieme di numeri scelti (fino a 9 complessivi, secondo le regole pubblicate).
 
+**Giocata salvata**: una Giocata o un Sistema che il giocatore conserva sul proprio dispositivo per riusarlo o confrontarlo con le nuove estrazioni.
+
 **Ritardo**: numero di estrazioni consecutive trascorse dall'ultima uscita di un numero.
 
 **Frequenza**: numero di volte in cui un numero è uscito in una finestra di estrazioni (ultime N, ultimi mesi, storico completo).
